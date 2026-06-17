@@ -1,0 +1,537 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Instructor Revenue Ledger API",
+        "description": "REST API for subscription revenue allocation, instructor balances, and payouts.",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "/api",
+            "description": "Local API server"
+        }
+    ],
+    "paths": {
+        "/instructors": {
+            "get": {
+                "tags": [
+                    "Instructors"
+                ],
+                "summary": "List instructors with balances",
+                "operationId": "6596e93bf993c06f8f3f2bc53fedcb26",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Instructor"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/instructors/{id}": {
+            "get": {
+                "tags": [
+                    "Instructors"
+                ],
+                "summary": "Get instructor balance details",
+                "operationId": "08886e469c425d9097e33ccc46e13171",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Instructor"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Instructor not found"
+                    }
+                }
+            }
+        },
+        "/instructors/{id}/payouts": {
+            "get": {
+                "tags": [
+                    "Instructors"
+                ],
+                "summary": "List payout history for an instructor",
+                "operationId": "ddfcb35d367f2b988cd4a49429edbe61",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response"
+                    },
+                    "404": {
+                        "description": "Instructor not found"
+                    }
+                }
+            }
+        },
+        "/payouts": {
+            "get": {
+                "tags": [
+                    "Payouts"
+                ],
+                "summary": "List all payouts",
+                "operationId": "112f204123b011cd910688a5d5729987",
+                "responses": {
+                    "200": {
+                        "description": "Successful response"
+                    }
+                }
+            }
+        },
+        "/payouts/{id}": {
+            "get": {
+                "tags": [
+                    "Payouts"
+                ],
+                "summary": "Get payout details",
+                "operationId": "64c07b490acf6b1c28a7a73c0df82d1f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response"
+                    },
+                    "404": {
+                        "description": "Payout not found"
+                    }
+                }
+            }
+        },
+        "/payouts/process": {
+            "post": {
+                "tags": [
+                    "Payouts"
+                ],
+                "summary": "Create payout batch and process instructor payments",
+                "operationId": "ff8243f58331b9c78ce7ac043654895e",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "batch_key": {
+                                        "type": "string",
+                                        "example": "payout-2026-06-15"
+                                    },
+                                    "sync": {
+                                        "description": "Process payouts synchronously (useful for testing)",
+                                        "type": "boolean",
+                                        "example": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Payout batch created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "batch_key": {
+                                            "type": "string"
+                                        },
+                                        "payouts_count": {
+                                            "type": "integer"
+                                        },
+                                        "payouts": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/Payout"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/revenue/accrue": {
+            "post": {
+                "tags": [
+                    "Revenue"
+                ],
+                "summary": "Accrue due revenue schedules into instructor ledger",
+                "operationId": "65bf61c955cd507c089388e6452428c2",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "as_of": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-01-31"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Accrual completed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "processed_count": {
+                                            "type": "integer",
+                                            "example": 30
+                                        },
+                                        "as_of": {
+                                            "type": "string",
+                                            "example": "2026-01-31"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/subscriptions": {
+            "post": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "Create subscription and allocate revenue schedules",
+                "operationId": "4b05f22cd1772563f2c2ef53e04176ea",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "student_name",
+                                    "plan_type",
+                                    "amount_paid",
+                                    "platform_fee_percentage",
+                                    "starts_at",
+                                    "instructors"
+                                ],
+                                "properties": {
+                                    "student_name": {
+                                        "type": "string",
+                                        "example": "Sara Mohamed"
+                                    },
+                                    "plan_type": {
+                                        "type": "string",
+                                        "example": "monthly",
+                                        "enum": [
+                                            "monthly",
+                                            "quarterly",
+                                            "yearly"
+                                        ]
+                                    },
+                                    "amount_paid": {
+                                        "description": "Amount in cents",
+                                        "type": "integer",
+                                        "example": 29900
+                                    },
+                                    "platform_fee_percentage": {
+                                        "type": "integer",
+                                        "example": 20
+                                    },
+                                    "starts_at": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-01-01"
+                                    },
+                                    "instructors": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "allocation_percentage": {
+                                                    "type": "integer",
+                                                    "example": 60
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Subscription created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Subscription"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/subscriptions/{id}": {
+            "get": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "Get subscription details",
+                "operationId": "2bf90b2ad6b7c7cae24661b9b24c855e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Subscription"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Subscription not found"
+                    }
+                }
+            }
+        },
+        "/subscriptions/{id}/refund": {
+            "post": {
+                "tags": [
+                    "Subscriptions"
+                ],
+                "summary": "Process mid-term refund (cancels future unearned schedules)",
+                "operationId": "c09cd236ff54befd6ecbb6949a532280",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "refunded_at": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-01-15"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Refund processed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Subscription"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Subscription not found"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Instructor": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "name": {
+                        "type": "string",
+                        "example": "Ahmed Hassan"
+                    },
+                    "balance": {
+                        "properties": {
+                            "outstanding_cents": {
+                                "type": "integer",
+                                "example": 5000
+                            },
+                            "outstanding": {
+                                "type": "string",
+                                "example": "50.00 EGP"
+                            },
+                            "total_earned_cents": {
+                                "type": "integer",
+                                "example": 8000
+                            },
+                            "total_earned": {
+                                "type": "string",
+                                "example": "80.00 EGP"
+                            },
+                            "total_paid_cents": {
+                                "type": "integer",
+                                "example": 3000
+                            },
+                            "total_paid": {
+                                "type": "string",
+                                "example": "30.00 EGP"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "Payout": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "instructor_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "amount_cents": {
+                        "type": "integer",
+                        "example": 5000
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "paid"
+                    },
+                    "idempotency_key": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "Subscription": {
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "student_id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "student_name": {
+                        "type": "string",
+                        "example": "Sara Mohamed"
+                    },
+                    "plan_type": {
+                        "type": "string",
+                        "example": "monthly"
+                    },
+                    "amount_paid_cents": {
+                        "type": "integer",
+                        "example": 29900
+                    },
+                    "status": {
+                        "type": "string",
+                        "example": "active"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Instructors",
+            "description": "Instructor balances and payout history"
+        },
+        {
+            "name": "Subscriptions",
+            "description": "Subscription lifecycle"
+        },
+        {
+            "name": "Revenue",
+            "description": "Revenue accrual operations"
+        },
+        {
+            "name": "Payouts",
+            "description": "Instructor payout operations"
+        }
+    ]
+}
